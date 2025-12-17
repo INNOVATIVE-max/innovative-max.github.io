@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#9333ea">
+    <title>El Impostor - Juego de Palabras</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #9333ea 0%, #ec4899 50%, #ef4444 100%);
+            min-height: 100vh;
+            padding: 20px;
+            transition: background 0.3s;
+        }
+
+        body.dark {
+            background: #111827;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .screen {
+            display: none;
+        }
+
+        .screen.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .card {
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        body.dark .card {
+            background: #1f2937;
+            color: white;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo-icon {
+            font-size: 80px;
+            animation: pulse 2s infinite;
+        }
+
+        h1 {
+            font-size: 48px;
+            font-weight: 900;
+            color: white;
+            text-align: center;
+            margin: 16px 0 8px;
+        }
+
+        h2 {
+            font-size: 32px;
+            font-weight: 900;
+            color: #9333ea;
+            margin-bottom: 20px;
+        }
+
+        body.dark h2 {
+            color: #c084fc;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: white;
+            font-size: 18px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            font-size: 18px;
+            font-weight: 700;
+            border: none;
+            border-radius: 16px;
+            cursor: pointer;
+            margin-bottom: 12px;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: scale(1.02);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-primary {
+            background: white;
+            color: #9333ea;
+        }
+
+        .btn-secondary {
+            background: #7c3aed;
+            color: white;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            margin-bottom: 12px;
+        }
+
+        body.dark input {
+            background: #374151;
+            border-color: #4b5563;
+            color: white;
+        }
+
+        .player-item {
+            background: linear-gradient(135deg, #f3e8ff 0%, #fce7f3 100%);
+            padding: 12px;
+            border-radius: 12px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        body.dark .player-item {
+            background: linear-gradient(135deg, #581c87 0%, #831843 100%);
+        }
+
+        .package-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .package-item {
+            padding: 20px;
+            border-radius: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+            color: white;
+        }
+
+        .package-item:hover {
+            transform: scale(1.05);
+        }
+
+        .package-item.selected {
+            box-shadow: 0 0 0 4px #fbbf24;
+        }
+
+        .package-icon {
+            font-size: 48px;
+            margin-bottom: 8px;
+        }
+
+        .settings-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            border: none;
+            background: white;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 100;
+        }
+
+        body.dark .settings-btn {
+            background: #1f2937;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            padding: 24px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        body.dark .modal-content {
+            background: #1f2937;
+            color: white;
+        }
+
+        .ad-banner {
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        body.dark .ad-banner {
+            background: #1f2937;
+            color: white;
+        }
+
+        .ad-content {
+            background: linear-gradient(135deg, #3b82f6 0%, #9333ea 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+        }
+
+        .btn-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .reveal-screen {
+            text-align: center;
+            color: white;
+        }
+
+        .reveal-icon {
+            font-size: 100px;
+            margin-bottom: 20px;
+        }
+
+        .word-display {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            margin: 20px 0;
+        }
+
+        .word-text {
+            font-size: 48px;
+            font-weight: 900;
+            color: #10b981;
+        }
+
+        .timer {
+            font-size: 48px;
+            font-weight: 900;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div style="position: fixed; top: 20px; right: 20px; display: flex; gap: 8px; z-index: 100;">
+            <button class="settings-btn" onclick="toggleDark()" id="darkBtn">🌙</button>
+            <button class="settings-btn" onclick="showDonation()">❤️</button>
+        </div>
+
+        <!-- HOME -->
+        <div id="home" class="screen active">
+            <div class="logo">
+                <div class="logo-icon">🎭</div>
+                <h1>El Impostor</h1>
+                <p class="subtitle">¿Quién es el impostor?</p>
+            </div>
+
+            <div class="ad-banner">
+                <div style="font-size: 10px; color: #9ca3af; margin-bottom: 8px;">Publicidad</div>
+                <div class="ad-content">
+                    <p style="font-weight: 700;">📱 Espacio Publicitario</p>
+                    <p style="font-size: 14px; opacity: 0.9;">Google AdMob aquí</p>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="goTo('players')">▶️ Iniciar Juego</button>
+            <button class="btn btn-secondary" onclick="goTo('packages')">📦 Ver Paquetes (12 GRATIS)</button>
+            <button class="btn btn-secondary" onclick="goTo('rules')">📖 Cómo Jugar</button>
+            <button class="btn" style="background: linear-gradient(135deg, #ef4444 0%, #ec4899 100%); color: white;" onclick="showDonation()">❤️ Apoyar</button>
+
+            <div style="text-align: center; color: white; margin-top: 20px; opacity: 0.7;">
+                <p>v2.0 - 100% Gratis</p>
+            </div>
+        </div>
+
+        <!-- PLAYERS -->
+        <div id="players" class="screen">
+            <h2 style="color: white; text-align: center;">👥 Jugadores</h2>
+            
+            <div class="card">
+                <input type="text" id="nameInput" placeholder="Nombre del jugador" maxlength="20">
+                <button class="btn btn-primary" onclick="addPlayer()">➕ Agregar</button>
+                
+                <div id="playerList"></div>
+
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #e5e7eb;">
+                    <label style="display: block; font-weight: 700; margin-bottom: 8px;">Número de impostores:</label>
+                    <select id="impostorCount" style="width: 100%; padding: 12px; border-radius: 12px; border: 2px solid #e5e7eb; font-size: 16px;">
+                        <option value="1">1 impostor 🔴</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="btn-row">
+                <button class="btn btn-secondary" onclick="goTo('home')">Atrás</button>
+                <button class="btn btn-primary" onclick="goTo('packages')" id="continueBtn">Continuar</button>
+            </div>
+        </div>
+
+        <!-- PACKAGES -->
+        <div id="packages" class="screen">
+            <h2 style="color: white; text-align: center;">📦 Paquetes</h2>
+
+            <div class="card">
+                <p style="font-weight: 900; font-size: 18px;">🎉 Todos GRATIS</p>
+                <p style="opacity: 0.7;">12 paquetes • 240 palabras</p>
+            </div>
+
+            <div class="package-grid" id="packageGrid"></div>
+
+            <div class="ad-banner">
+                <div style="font-size: 10px; color: #9ca3af; margin-bottom: 8px;">Publicidad</div>
+                <div class="ad-content">
+                    <p style="font-weight: 700;">📱 Banner Publicitario</p>
+                </div>
+            </div>
+
+            <div class="btn-row">
+                <button class="btn btn-secondary" onclick="backPackages()">Atrás</button>
+                <button class="btn btn-primary" onclick="startGame()" id="startBtn" style="background: #10b981;">⚡ Iniciar</button>
+            </div>
+        </div>
+
+        <!-- REVEAL -->
+        <div id="reveal" class="screen"></div>
+
+        <!-- PLAYING -->
+        <div id="playing" class="screen"></div>
+
+        <!-- RULES -->
+        <div id="rules" class="screen">
+            <div class="card">
+                <h2>📖 Cómo Jugar</h2>
+                
+                <div style="background: #f3e8ff; padding: 16px; border-radius: 12px; margin-bottom: 16px;">
+                    <h3 style="margin-bottom: 8px;">🎯 Objetivo</h3>
+                    <p>Los tripulantes descubren al impostor. El impostor descubre la palabra.</p>
+                </div>
+
+                <div style="background: #d1fae5; padding: 16px; border-radius: 12px; margin-bottom: 16px;">
+                    <h3 style="margin-bottom: 8px;">👥 Roles</h3>
+                    <p><strong>Tripulantes:</strong> Conocen la palabra. Dan pistas sutiles.</p>
+                    <p style="margin-top: 8px;"><strong>Impostor:</strong> NO conoce la palabra. Debe fingir.</p>
+                </div>
+
+                <div style="background: #dbeafe; padding: 16px; border-radius: 12px; margin-bottom: 16px;">
+                    <h3 style="margin-bottom: 8px;">🎮 Juego</h3>
+                    <ol style="padding-left: 20px; line-height: 1.8;">
+                        <li>Cada jugador ve su rol en secreto</li>
+                        <li>Por turnos dan pistas</li>
+                        <li>Votan quién es el impostor</li>
+                        <li>Se revela la verdad</li>
+                    </ol>
+                </div>
+
+                <div style="background: #fee2e2; padding: 16px; border-radius: 12px; margin-bottom: 16px;">
+                    <h3 style="margin-bottom: 8px;">⚠️ Importante</h3>
+                    <p style="font-weight: 700;">¡NO mires la pantalla de otros! 🤫</p>
+                </div>
+
+                <button class="btn btn-primary" onclick="goTo('home')">Entendido</button>
+            </div>
+        </div>
+
+        <!-- DONATION MODAL -->
+        <div id="donationModal" class="modal">
+            <div class="modal-content">
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="font-size: 64px;">❤️</div>
+                    <h2>¡Apoya el Juego!</h2>
+                    <p style="opacity: 0.7;">Si disfrutas El Impostor</p>
+                </div>
+
+                <a href="https://paypal.com" target="_blank" class="btn" style="background: #0070ba; color: white; text-decoration: none; display: block;">💳 PayPal</a>
+                <a href="" target="_blank" class="btn" style="background: linear-gradient(135deg, #ef4444, #ec4899); color: white; text-decoration: none; display: block;">☕ Nequi</a>
+                <a href="https://patreon.com/Itz_JuanJo?utm_medium=unknown&utm_source=join_link&utm_campaign=creatorshare_creator&utm_content=copyLink" target="_blank" class="btn" style="background: #f96854; color: white; text-decoration: none; display: block;">🎨 Patreon</a>
+
+                <div style="background: #fef3c7; padding: 16px; border-radius: 12px; margin-bottom: 16px; text-align: center;">
+                    <p style="font-size: 14px; font-weight: 600;">Tu apoyo mantiene el juego gratis 🙏</p>
+                </div>
+
+                <button class="btn btn-secondary" onclick="hideDonation()">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var game = {
+            players: [],
+            packages: [
+                { id: 'animals', name: 'Animales', icon: '🐶', words: ['Perro', 'Gato', 'Elefante', 'León', 'Tigre', 'Jirafa', 'Mono', 'Águila', 'Delfín', 'Pingüino'], bg: '#10b981' },
+                { id: 'food', name: 'Comidas', icon: '🍕', words: ['Pizza', 'Hamburguesa', 'Sushi', 'Tacos', 'Pasta', 'Helado', 'Ensalada', 'Arroz', 'Pollo', 'Carne'], bg: '#f97316' },
+                { id: 'objects', name: 'Objetos', icon: '🔨', words: ['Martillo', 'Tijeras', 'Lápiz', 'Reloj', 'Espejo', 'Llave', 'Paraguas', 'Maleta', 'Celular', 'Computadora'], bg: '#3b82f6' },
+                { id: 'countries', name: 'Países', icon: '🌍', words: ['Colombia', 'Brasil', 'México', 'España', 'Francia', 'Italia', 'Japón', 'China', 'Australia', 'Canadá'], bg: '#14b8a6' },
+                { id: 'movies', name: 'Películas', icon: '🎬', words: ['Titanic', 'Avatar', 'Matrix', 'Inception', 'Gladiador', 'Rocky', 'Joker', 'Frozen', 'Coco', 'Toy Story'], bg: '#9333ea' },
+                { id: 'brands', name: 'Marcas', icon: '👕', words: ['Nike', 'Adidas', 'Apple', 'Samsung', 'Coca-Cola', 'Pepsi', 'McDonalds', 'Ferrari', 'BMW', 'Tesla'], bg: '#eab308' },
+                { id: 'horror', name: 'Terror', icon: '👻', words: ['Vampiro', 'Zombie', 'Fantasma', 'Bruja', 'Demonio', 'Momia', 'Hombre Lobo', 'Payaso', 'Muñeca', 'Esqueleto'], bg: '#b91c1c' },
+                { id: 'professions', name: 'Profesiones', icon: '👨‍⚕️', words: ['Doctor', 'Profesor', 'Ingeniero', 'Arquitecto', 'Chef', 'Piloto', 'Bombero', 'Policía', 'Enfermera', 'Abogado'], bg: '#6366f1' },
+                { id: 'sports', name: 'Deportes', icon: '⚽', words: ['Fútbol', 'Baloncesto', 'Tenis', 'Natación', 'Béisbol', 'Voleibol', 'Golf', 'Boxeo', 'Ciclismo', 'Atletismo'], bg: '#16a34a' },
+                { id: 'instruments', name: 'Instrumentos', icon: '🎸', words: ['Guitarra', 'Piano', 'Batería', 'Violín', 'Flauta', 'Trompeta', 'Saxofón', 'Acordeón', 'Arpa', 'Bajo'], bg: '#ec4899' },
+                { id: 'vehicles', name: 'Vehículos', icon: '🚗', words: ['Carro', 'Moto', 'Bicicleta', 'Avión', 'Barco', 'Tren', 'Helicóptero', 'Submarino', 'Camión', 'Bus'], bg: '#64748b' },
+                { id: 'videogames', name: 'Videojuegos', icon: '🎮', words: ['Minecraft', 'Fortnite', 'FIFA', 'Mario', 'Zelda', 'Pokemon', 'GTA', 'Call of Duty', 'Pac-Man', 'Tetris'], bg: '#8b5cf6' }
+            ],
+            selected: null,
+            impostorCount: 1,
+            gameData: null,
+            currentIndex: 0,
+            revealed: false
+        };
+
+        function goTo(screen) {
+            document.querySelectorAll('.screen').forEach(function(s) {
+                s.classList.remove('active');
+            });
+            document.getElementById(screen).classList.add('active');
+        }
+
+        function toggleDark() {
+            document.body.classList.toggle('dark');
+            var btn = document.getElementById('darkBtn');
+            btn.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
+        }
+
+        function showDonation() {
+            document.getElementById('donationModal').classList.add('active');
+        }
+
+        function hideDonation() {
+            document.getElementById('donationModal').classList.remove('active');
+        }
+
+        function addPlayer() {
+            var input = document.getElementById('nameInput');
+            var name = input.value.trim();
+            if (name && game.players.length < 15) {
+                game.players.push(name);
+                input.value = '';
+                updatePlayers();
+            }
+        }
+
+        function removePlayer(i) {
+            game.players.splice(i, 1);
+            updatePlayers();
+        }
+
+        function updatePlayers() {
+            var list = document.getElementById('playerList');
+            var html = '';
+            
+            for (var i = 0; i < game.players.length; i++) {
+                html += '<div class="player-item"><span>' + (i+1) + '. ' + game.players[i] + '</span><button onclick="removePlayer(' + i + ')" style="background: none; border: none; font-size: 20px; cursor: pointer;">🗑️</button></div>';
+            }
+            
+            list.innerHTML = html;
+
+            var btn = document.getElementById('continueBtn');
+            if (game.players.length >= 3) {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            } else {
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+            }
+
+            var sel = document.getElementById('impostorCount');
+            sel.innerHTML = '';
+            var max = Math.min(3, game.players.length - 1);
+            for (var j = 1; j <= max; j++) {
+                sel.innerHTML += '<option value="' + j + '">' + j + ' impostor' + (j > 1 ? 'es' : '') + ' 🔴</option>';
+            }
+        }
+
+        function backPackages() {
+            if (game.players.length > 0) {
+                goTo('players');
+            } else {
+                goTo('home');
+            }
+        }
+
+        function renderPackages() {
+            var grid = document.getElementById('packageGrid');
+            var html = '';
+            
+            for (var i = 0; i < game.packages.length; i++) {
+                var p = game.packages[i];
+                var selected = game.selected === p.id ? 'selected' : '';
+                html += '<div class="package-item ' + selected + '" style="background: ' + p.bg + ';" onclick="selectPackage(\'' + p.id + '\')">';
+                html += '<div class="package-icon">' + p.icon + '</div>';
+                html += '<div style="font-weight: 700;">' + p.name + '</div>';
+                html += '<div style="font-size: 12px;">' + p.words.length + ' palabras</div>';
+                html += '</div>';
+            }
+            
+            grid.innerHTML = html;
+            updateStartBtn();
+        }
+
+        function selectPackage(id) {
+            game.selected = id;
+            renderPackages();
+        }
+
+        function updateStartBtn() {
+            var btn = document.getElementById('startBtn');
+            if (game.selected && game.players.length >= 3) {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+            } else {
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
+            }
+        }
+
+        function startGame() {
+            if (!game.selected || game.players.length < 3) return;
+
+            game.impostorCount = parseInt(document.getElementById('impostorCount').value);
+            
+            var pkg = null;
+            for (var i = 0; i < game.packages.length; i++) {
+                if (game.packages[i].id === game.selected) {
+                    pkg = game.packages[i];
+                    break;
+                }
+            }
+
+            var word = pkg.words[Math.floor(Math.random() * pkg.words.length)];
+            var shuffled = game.players.slice().sort(function() { return Math.random() - 0.5; });
+
+            var impostorIndices = [];
+            while (impostorIndices.length < game.impostorCount) {
+                var idx = Math.floor(Math.random() * shuffled.length);
+                if (impostorIndices.indexOf(idx) === -1) {
+                    impostorIndices.push(idx);
+                }
+            }
+
+            var roles = [];
+            for (var j = 0; j < shuffled.length; j++) {
+                roles.push({
+                    name: shuffled[j],
+                    isImpostor: impostorIndices.indexOf(j) !== -1,
+                    word: word
+                });
+            }
+
+            game.gameData = { roles: roles, word: word, pkg: pkg.name };
+            game.currentIndex = 0;
+            game.revealed = false;
+            showReveal();
+        }
+
+        function showReveal() {
+            var screen = document.getElementById('reveal');
+            var role = game.gameData.roles[game.currentIndex];
+
+            if (!game.revealed) {
+                screen.innerHTML = '<div class="reveal-screen"><div class="card" style="margin-bottom: 20px;"><div style="font-size: 64px;">👤</div><h2 style="color: #9333ea; font-size: 28px;">Turno de</h2><p style="font-size: 40px; font-weight: 900; color: #9333ea;">' + role.name + '</p><p>Jugador ' + (game.currentIndex + 1) + ' de ' + game.gameData.roles.length + '</p></div><div style="background: linear-gradient(135deg, #fbbf24, #f97316); padding: 20px; border-radius: 20px; margin-bottom: 20px;"><div style="font-size: 40px;">⚠️</div><p style="font-weight: 900; font-size: 18px; color: #1f2937;">¡NO MIRES LA PANTALLA!</p></div><button class="btn btn-primary" onclick="revealRole()">👁️ Ver mi rol</button></div>';
+            } else {
+                if (role.isImpostor) {
+                    document.body.style.background = 'linear-gradient(135deg, #7f1d1d, #000000)';
+                    screen.innerHTML = '<div class="reveal-screen"><div class="reveal-icon">🔴</div><h1 style="font-size: 56px; font-weight: 900; color: #ef4444; margin-bottom: 20px;">IMPOSTOR</h1><div class="card" style="background: rgba(0,0,0,0.5); color: white; margin-bottom: 20px;"><p style="font-size: 20px; font-weight: 700; margin-bottom: 12px;">¡Eres el impostor!</p><p style="color: #fca5a5; font-weight: 600;">NO conoces la palabra</p><p style="margin-top: 8px;">Finge y descúbrela</p></div><button class="btn" style="background: white; color: #1f2937;" onclick="nextPlayer()">' + (game.currentIndex < game.gameData.roles.length - 1 ? 'Siguiente' : 'Jugar') + '</button></div>';
+                } else {
+                    document.body.style.background = 'linear-gradient(135deg, #059669, #3b82f6)';
+                    screen.innerHTML = '<div class="reveal-screen"><div class="reveal-icon">✅</div><h1 style="font-size: 40px; font-weight: 900; margin-bottom: 16px;">Tripulante</h1><p style="font-size: 20px; font-weight: 700; margin-bottom: 12px;">La palabra es:</p><div class="word-display"><div class="word-text">' + role.word + '</div></div><div class="card" style="background: rgba(16,185,129,0.3); color: white; margin-bottom: 20px;"><p style="font-weight: 700;">💡 Da pistas sutiles</p></div><button class="btn" style="background: white; color: #1f2937;" onclick="nextPlayer()">' + (game.currentIndex < game.gameData.roles.length - 1 ? 'Siguiente' : 'Jugar') + '</button></div>';
+                }
+            }
+            goTo('reveal');
+        }
+
+        function revealRole() {
+            game.revealed = true;
+            showReveal();
+        }
+
+        function nextPlayer() {
+            game.revealed = false;
+            if (game.currentIndex < game.gameData.roles.length - 1) {
+                game.currentIndex++;
+                document.body.style.background = 'linear-gradient(135deg, #1f2937, #111827)';
+                showReveal();
+            } else {
+                document.body.style.background = 'linear-gradient(135deg, #9333ea, #ec4899, #ef4444)';
+                showPlaying();
+            }
+        }
+
+        function showPlaying() {
+            var screen = document.getElementById('playing');
+            screen.innerHTML = '<div style="text-align: center; margin-bottom: 40px;"><div style="font-size: 80px; margin-bottom: 20px;">🎭</div><h1 style="color: white; font-size: 40px;">¡A Jugar!</h1></div><div class="card" style="margin-bottom: 20px;"><h3 style="color: #9333ea; margin-bottom: 16px;">📋 Instrucciones</h3><ol style="line-height: 1.8; padding-left: 20px;"><li>Cada jugador da UNA pista</li><li>Tripulantes: sean sutiles</li><li>Impostor: finge conocer la palabra</li><li>Después de 2-3 rondas, voten</li><li>¡Descubran al impostor!</li></ol></div><div class="ad-banner"><div style="font-size: 10px; color: #9ca3af; margin-bottom: 8px;">Publicidad</div><div class="ad-content"><p style="font-weight: 700;">📱 Banner</p></div></div><button class="btn" style="background: linear-gradient(135deg, #fbbf24, #f97316); color: #1f2937;" onclick="revealAll()">🔍 Revelar</button><button class="btn" style="background: #10b981; color: white;" onclick="newRound()">🔄 Nueva Ronda</button><button class="btn btn-secondary" onclick="resetGame()">🏠 Inicio</button><div style="text-align: center; color: white; margin-top: 20px; opacity: 0.7;"><p>Paquete: ' + game.gameData.pkg + '</p></div>';
+            goTo('playing');
+        }
+
+        function revealAll() {
+            var impostors = [];
+            for (var i = 0; i < game.gameData.roles.length; i++) {
+                if (game.gameData.roles[i].isImpostor) {
+                    impostors.push(game.gameData.roles[i].name);
+                }
+            }
+            alert('🎭 REVELACIÓN\n\nPalabra: ' + game.gameData.word + '\n\nImpostor(es): ' + impostors.join(', '));
+        }
+
+        function newRound() {
+            game.currentIndex = 0;
+            game.revealed = false;
+            startGame();
+        }
+
+        function resetGame() {
+            game.players = [];
+            game.selected = null;
+            game.gameData = null;
+            game.currentIndex = 0;
+            game.revealed = false;
+            document.body.style.background = 'linear-gradient(135deg, #9333ea, #ec4899, #ef4444)';
+            goTo('home');
+        }
+
+        document.getElementById('nameInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addPlayer();
+            }
+        });
+
+        window.onload = function() {
+            renderPackages();
+        };
+    </script>
+</body>
+</html>
